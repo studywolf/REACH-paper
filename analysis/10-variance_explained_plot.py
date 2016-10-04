@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+import seaborn
 
 def bootstrapci(data, func, n=3000, p=0.95):
     index=int(n*(1-p)/2)
