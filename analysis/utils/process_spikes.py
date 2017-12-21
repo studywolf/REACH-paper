@@ -92,7 +92,6 @@ def process_correlation_activity(folder, filename, n_neurons, n_trials,
 
         # get the rest of our parameters for analysis
         n_timesteps = min_length
-        n_bins = int(n_timesteps / bin_size)
         n_avg_trials = int(len(trajectories) / n_avg_together)
 
         neuron_data = []
@@ -113,9 +112,3 @@ def process_correlation_activity(folder, filename, n_neurons, n_trials,
                 '%s/processed_data/%s_processed%.4i' %
                 (folder, filename, ii*8+start_num),
                 array1=filtered[ii])
-
-# def write_to_matlab():
-#     fr_dict.update({'trial%i' % ii: fr_smoothed})
-#     print('writing full set to matlab file')
-#     import scipy.io
-#     scipy.io.savemat('attractor_%i_firing_rates' % dimension, fr_dict)
