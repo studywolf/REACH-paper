@@ -24,7 +24,7 @@ for f1, f2, f3 in zip(files1, files2, files3):
     path_ee = np.load(f2)['array1']
     path_target = np.load(f3)['array1']
     interval = path_dist.shape[0]
-    if path_dist.shape[0] > 0  and count > 0:# and count < 30:
+    if path_dist.shape[0] > 0  and count > 0:
         rms.append(np.sum(np.sqrt(path_dist[:,0]**2 + path_dist[:,1]**2))*1e-3)
         full_path_ee = np.vstack([full_path_ee, path_ee])
         full_path_target = np.vstack([full_path_target, path_target])

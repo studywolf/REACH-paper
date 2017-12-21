@@ -1,5 +1,4 @@
 import numpy as np
-import sys
 
 bin_size = 10
 num_average_together = 1
@@ -12,7 +11,7 @@ filename = 'attractor'
 
 # read in trajectories' neural data
 min_length = 1e20
-for dimension in range(8):  # noqa: C901
+for dimension in range(8):
     trajectories = []
 
     for jj in range(start_num, num_trials):

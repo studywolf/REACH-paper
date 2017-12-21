@@ -16,9 +16,7 @@ spikes = read_spikes(folder=folder,
                      n_trials=num_reaches*num_trials)
 spikes_binned = bin_data(spikes, bin_size=10)
 
-# great_neurons = [1131, 1299, 1359, 1745]
-# for neuron in great_neurons:  # uncomment to see some well matched neurons
-for neuron in range(spikes.shape[2]):  # comment if viewing great_neurons
+for neuron in range(spikes.shape[2]):
     print('neuron: %i' % neuron)
 
     plt.figure(figsize=(9, 5), facecolor='white')
@@ -37,8 +35,7 @@ for neuron in range(spikes.shape[2]):  # comment if viewing great_neurons
         plt.xlim(1, 2050)
         plt.ylim(0, 6)
 
-        # index through and related runs under
-        # '%i%i' % (reach_direction, trial) format
+        # index through runs under '%i%i' % (reach_direction, trial) format
         for kk in range(num_trials):
             index = jj + kk*8
             s = spikes_binned[index][:, neuron]
