@@ -59,7 +59,6 @@ def generate(arm, kv=1,
                          function=CB_func, synapse=None)
         # dynamics adaptation
         if learning_rate is not None:
-            # adding in a context signal for the cerebellum (the target)
             net.CB_adapt = nengo.Ensemble(
                 n_neurons=1000, dimensions=arm.DOF*2,
                 radius=np.sqrt(arm.DOF*2),
