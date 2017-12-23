@@ -2,13 +2,11 @@ import numpy as np
 
 import nengo
 from utils import generate_scaling_functions, AreaIntercepts, Triangular
-from nengolib.signal import z
 
 def generate(arm, kv=1,
              learning_rate=None,
              direct_mode=False,
              learned_weights=None,
-             learned_encoders=None,
              means=None, scales=None):
     """ Cerebellum model. Compensates for the inertia in the system.
     If dynamics compensation is set True, then it also generates a
@@ -61,7 +59,6 @@ def generate(arm, kv=1,
                          function=CB_func, synapse=None)
         # dynamics adaptation
         if learning_rate is not None:
-            # adding in a context signal for the cerebellum (the target)
             net.CB_adapt = nengo.Ensemble(
                 n_neurons=1000, dimensions=arm.DOF*2,
                 radius=np.sqrt(arm.DOF*2),
@@ -72,7 +69,6 @@ def generate(arm, kv=1,
 
             net.learn_encoders = nengo.Connection(
                 net.input[:arm.DOF*2], net.CB_adapt,)
-                # function=lambda x: [x[0], x[1], x[2] - 1.25])
 
             # if no saved weights were passed in start from zero
             weights = (learned_weights if learned_weights is not None
@@ -84,10 +80,6 @@ def generate(arm, kv=1,
                 # set up to initially have 0 output from adaptive connection
                 transform=weights,
                 learning_rule_type=nengo.PES(
-                    # NOTE: to use the pre_synapse parameter you need to be on the
-                    # PES-synapse branch of Nengo
-                    # use neural activity from n time steps ago when learning
-                    pre_synapse=z**(-2),
                     learning_rate=learning_rate),
                 synapse=None)
 
