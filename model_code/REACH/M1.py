@@ -2,7 +2,7 @@ import numpy as np
 
 import nengo
 
-from utils import generate_scaling_functions, AreaIntercepts, Triangular
+from utils import generate_scaling_functions, AreaIntercepts
 
 def generate(arm, kp=1,
              operational_space=True,

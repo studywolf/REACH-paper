@@ -3,12 +3,14 @@ import nengo
 
 def generate(net=None,  # define PMC, M1, CB, S1 inside net
              probes_on=False):  # set True to record data
+    """ Connect up the PMC, M1, CB, and S1 sub-networks up for
+    the REACH model.
+    """
 
     config = nengo.Config(nengo.Connection, nengo.Ensemble)
-    # config[nengo.Connection].synapse = nengo.Lowpass(.001)
     with net, config:
 
-        dim = net.dim  # the number of DOF of the mouse arm
+        dim = net.dim  # the number of DOF of the arm
         net.probes_on = probes_on
 
         relay = nengo.Node(size_in=dim, label='relay')
