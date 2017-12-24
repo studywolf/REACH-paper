@@ -25,31 +25,6 @@ def generate_scaling_functions(means, scales, filename=None):
     return scale_down, scale_up
 
 
-def plot_3D_encoders(filename):
-    import numpy as np
-    from mpl_toolkits.mplot3d import Axes3D
-    import matplotlib.pyplot as plt
-
-    a = np.load(filename)['arr_0']
-    fig = plt.figure()
-    ax = fig.add_subplot(111, projection='3d')
-    n = 100
-    ax.scatter(a[:, 0], a[:, 1], a[:, 2], 'r', marker='o')
-    ax.set_zlim([-10, 10])
-    ax.set_ylim([-10, 10])
-    ax.set_xlim([-10, 10])
-
-
-    # draw the unit sphere
-    u, v = np.mgrid[0:2*np.pi:20j, 0:np.pi:10j]
-    x = np.cos(u)*np.sin(v)
-    y = np.sin(u)*np.sin(v)
-    z = np.cos(v)
-    ax.plot_wireframe(x, y, z, color="r")
-
-    plt.show()
-
-
 class AreaIntercepts(nengo.dists.Distribution):
     """ Generate an optimally distributed set of intercepts in
     high-dimensional space.
@@ -79,25 +54,3 @@ class AreaIntercepts(nengo.dists.Distribution):
         for i in range(len(s)):
             s[i] = self.transform(s[i])
         return s
-
-
-class Triangular(nengo.dists.Distribution):
-    left = nengo.params.NumberParam('dimensions')
-    right = nengo.params.NumberParam('dimensions')
-    mode = nengo.params.NumberParam('dimensions')
-
-    def __init__(self, left, mode, right):
-        super(Triangular, self).__init__()
-        self.left = left
-        self.right = right
-        self.mode = mode
-
-    def __repr__(self):
-        return ("Triangular(left=%r, mode=%r, right=%r)" %
-                (self.left, self.mode, self.right))
-
-    def sample(self, n, d=None, rng=np.random):
-        if d is None:
-            return rng.triangular(self.left, self.mode, self.right, size=n)
-        else:
-            return rng.triangular(self.left, self.mode, self.right, size=(n, d))
