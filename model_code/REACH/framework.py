@@ -2,18 +2,10 @@ import nengo
 
 
 def generate(net=None,  # define PMC, M1, CB, S1 inside net
-             probes_on=False,  # set True to record data
-             start_xy=None):  # start (x, y) of arm
-
-
-    start_target = [0.0, 1.0]
-
-    # if no initial hand position given, start at first target
-    if start_xy is None:
-        start_xy = start_target
+             probes_on=False):  # set True to record data
 
     config = nengo.Config(nengo.Connection, nengo.Ensemble)
-    config[nengo.Connection].synapse = nengo.Lowpass(.001)
+    # config[nengo.Connection].synapse = nengo.Lowpass(.001)
     with net, config:
 
         dim = net.dim  # the number of DOF of the mouse arm
@@ -32,10 +24,10 @@ def generate(net=None,  # define PMC, M1, CB, S1 inside net
             nengo.Connection(net.error[:dim], net.M1.input[dim:])
 
         if getattr(net, "S1", False):
-            nengo.Connection(net.arm_node, net.S1)
+            nengo.Connection(net.arm_node, net.S1.input)
             if getattr(net, "M1", False):
                 # connect up sensory feedback
-                nengo.Connection(net.S1[:dim], net.M1.input[:dim])
+                nengo.Connection(net.S1.output[:dim], net.M1.input[:dim])
 
         if getattr(net, "CB", False):
             # connect up sensory feedback
@@ -54,8 +46,8 @@ def generate(net=None,  # define PMC, M1, CB, S1 inside net
             nengo.Connection(net.CB.output[dim:], net.arm_node[:2])
 
         if probes_on:
-            net.probe_S1 = nengo.Probe(net.S1)
-            net.probe_M1 = nengo.Probe(net.M1.input)
-            net.probe_CB = nengo.Probe(net.CB.input)
+            net.probe_S1 = nengo.Probe(net.S1.output)
+            net.probe_M1 = nengo.Probe(net.M1.output)
+            net.probe_CB = nengo.Probe(net.CB.output)
 
     return net
