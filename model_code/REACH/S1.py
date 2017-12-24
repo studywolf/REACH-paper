@@ -29,14 +29,13 @@ def generate(arm, direct_mode=False, means=None, scales=None):
     if direct_mode:
         net.config[nengo.Ensemble].neuron_type = nengo.Direct()
     with net:
-        # create / connect up M1 --------------------------------------------------
+        # create / connect up S1 --------------------------------------------------
         net.S1 = nengo.networks.EnsembleArray(n_neurons=50, n_ensembles=dim)
 
         # expecting input in form [q, x_des]
         net.input = nengo.Node(output=scale_down, size_in=dim)
         net.output = nengo.Node(lambda t, x: scale_up(x), size_in=dim)
 
-        # send in system feedback and target information
         # don't account for synapses twice
         nengo.Connection(net.input, net.S1.input, synapse=None)
         nengo.Connection(net.S1.output, net.output, synapse=None)
