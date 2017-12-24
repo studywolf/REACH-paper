@@ -12,6 +12,9 @@ def generate(arm, kv=1,
     If dynamics compensation is set True, then it also generates a
     nonlinear adaptive control signal, using an efferent copy of the
     outgoing motor control signal as a training signal.
+
+    input: [q, dq, u]
+    output: [u_dynamics, u_adapt]
     """
     dim = arm.DOF * 2
 
@@ -33,10 +36,10 @@ def generate(arm, kv=1,
     with net:
         # create / connect up CB ----------------------------------------------
         net.CB = nengo.Ensemble(
-            n_neurons=5000, dimensions=dim,
+            n_neurons=1000, dimensions=dim,
             radius=np.sqrt(dim),
             intercepts=AreaIntercepts(
-                dimensions=dim, base=nengo.dists.Uniform(-1, 0)))
+                dimensions=dim, base=nengo.dists.Uniform(-1, .1)))
         # expecting input in form [q, dq, u]
         net.input = nengo.Node(output=scale_down, size_in=dim+arm.DOF+2)
         cb_input = nengo.Node(size_in=dim, label='CB input')

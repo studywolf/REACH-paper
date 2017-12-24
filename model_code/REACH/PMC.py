@@ -8,12 +8,12 @@ import importlib
 from . import forcing_functions; importlib.reload(forcing_functions)
 
 
-def generate(y_des,
-             speed=1,
-             alpha=1000.0,
-             direct_mode=False):
+def generate(y_des, speed=1, alpha=1000.0, direct_mode=False):
     """ Pre-motor cortex model, implements a dynamical movement
     primitive that generates the provided trajectory.
+
+    input: None
+    output: [trajectory[0], trajectory[1]]
     """
     beta = alpha / 4.0
 

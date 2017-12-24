@@ -13,6 +13,9 @@ def generate(arm, kp=1,
     task space to joint space. If inertia compensation is true, then
     it also includes dynamics compensation in task space, otherwise
     it's purely a kinematic transform.
+
+    input: [q, x_des]
+    output: [u_kinematics]
     """
     dim = arm.DOF + 2
 
@@ -35,10 +38,10 @@ def generate(arm, kp=1,
     with net:
         # create / connect up M1 --------------------------------------------------
         net.M1 = nengo.Ensemble(
-            n_neurons=5000, dimensions=dim,
+            n_neurons=1000, dimensions=dim,
             radius=np.sqrt(dim),
             intercepts=AreaIntercepts(
-                dimensions=dim, base=nengo.dists.Uniform(-1, -.2)))
+                dimensions=dim, base=nengo.dists.Uniform(-1, .1)))
 
         # expecting input in form [q, x_des]
         net.input = nengo.Node(output=scale_down, size_in=dim)

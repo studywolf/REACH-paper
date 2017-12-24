@@ -46,6 +46,7 @@ from REACH import arm; importlib.reload(arm)
 from REACH import M1; importlib.reload(M1)
 from REACH import CB; importlib.reload(CB)
 from REACH import PMC; importlib.reload(PMC)
+from REACH import S1; importlib.reload(S1)
 from REACH import framework; importlib.reload(framework)
 
 
@@ -73,13 +74,15 @@ def generate():
                              operational_space=True,
                              inertia_compensation=True,
                              means=[0.6, 2.2, 0, 0],
-                             scales=[.25, .25, .25, .25])
+                             scales=[.5, .5, .25, .25])
 
         # create an S1 model --------------------------------------------------
-        net.S1 = nengo.Ensemble(n_neurons=3000, dimensions=net.dim*2+2, neuron_type=nengo.Direct(),
-                                radius=np.sqrt(net.dim*2+2), label='S1')
+        net.S1 = S1.generate(mouse_arm,
+                             means=[.6, 2.2, -.5, 0, 0, 1.25],
+                             scales=[.5, .5, 1.7, 1.5, .75, .75])
+
         # subtract out current position to get desired task space direction
-        nengo.Connection(net.S1[net.dim*2:], net.error, transform=-1)
+        nengo.Connection(net.S1.output[net.dim*2:], net.error, transform=-1)
 
         # create a trajectory for the hand to follow --------------------------
         # NOTE: The created (x,y) trajectory is for tracing out a circle,
@@ -95,8 +98,8 @@ def generate():
         nengo.Connection(net.PMC.output, net.xy)
 
         net.CB = CB.generate(mouse_arm, kv=kv,
-                             means=[0.6, 2.2, 0, 0],
-                             scales=[.125, .25, 1, 1.5])
+                             means=[0.6, 2.2, -.5, 0],
+                             scales=[.5, .5, 1.6, 1.5])
 
     model = framework.generate(net=net, probes_on=True)
     return model
