@@ -10,7 +10,7 @@ def generate(net=None,  # define PMC, M1, CB, S1 inside net
     config = nengo.Config(nengo.Connection, nengo.Ensemble)
     with net, config:
 
-        dim = net.dim  # the number of DOF of the mouse arm
+        dim = net.dim  # the number of DOF of the arm
         net.probes_on = probes_on
 
         relay = nengo.Node(size_in=dim, label='relay')

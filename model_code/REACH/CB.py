@@ -1,7 +1,7 @@
 import numpy as np
 
 import nengo
-from utils import generate_scaling_functions, AreaIntercepts, Triangular
+from utils import generate_scaling_functions, AreaIntercepts
 
 def generate(arm, kv=1,
              learning_rate=None,

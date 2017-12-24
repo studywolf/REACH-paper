@@ -81,27 +81,27 @@ def generate():
         targets.append(ep)
     targets = np.array(targets)
 
-    mouse_arm = arm.Arm2Link(dt=1e-3)
+    arm_sim = arm.Arm2Link(dt=1e-3)
     # set the initial position of the arm
-    mouse_arm.init_q = mouse_arm.inv_kinematics(center)
-    mouse_arm.reset()
+    arm_sim.init_q = arm_sim.inv_kinematics(center)
+    arm_sim.reset()
 
     net = nengo.Network(seed=0)
     with net:
-        net.dim = mouse_arm.DOF
-        net.arm_node = mouse_arm.create_nengo_node()
+        net.dim = arm_sim.DOF
+        net.arm_node = arm_sim.create_nengo_node()
         net.error = nengo.Ensemble(1000, 2)
         net.xy = nengo.Node(size_in=2)
 
         # create an M1 model ------------------------------------------------------
-        net.M1 = M1.generate(mouse_arm, kp=kp,
+        net.M1 = M1.generate(arm_sim, kp=kp,
                              operational_space=True,
                              inertia_compensation=True,
                              means=[0.6, 2.2, 0, 0],
                              scales=[.25, .3, .25, .25])
 
         # create an S1 model ------------------------------------------------------
-        net.S1 = S1.generate(mouse_arm,
+        net.S1 = S1.generate(arm_sim,
                              means=[.6, 2.2, -.5, 0, 0, 1.25],
                              scales=[.5, .5, 1.7, 1.5, .75, .75])
 
@@ -121,14 +121,14 @@ def generate():
         nengo.Connection(net.PMC.output, net.xy)
 
         # create  a CB model ------------------------------------------------------
-        net.CB = CB.generate(mouse_arm, kv=kv,
+        net.CB = CB.generate(arm_sim, kv=kv,
                              learning_rate=1e-4,
                              means=[0.65, 2.2, 0, 0],
                              scales=[.25, .3, .75, 1.25])
 
         perturbation_node = nengo.Node(perturbation_func, size_in=4)
-        nengo.Connection(net.arm_node[:mouse_arm.DOF*2], perturbation_node)
-        nengo.Connection(perturbation_node, net.arm_node[:mouse_arm.DOF])
+        nengo.Connection(net.arm_node[:arm_sim.DOF*2], perturbation_node)
+        nengo.Connection(perturbation_node, net.arm_node[:arm_sim.DOF])
 
     model = framework.generate(net=net, probes_on=False)
     return model
