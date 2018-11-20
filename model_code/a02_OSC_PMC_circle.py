@@ -101,7 +101,7 @@ def generate():
                              means=[0.6, 2.2, -.5, 0],
                              scales=[.5, .5, 1.6, 1.5])
 
-    model = framework.generate(net=net, probes_on=True)
+    model = framework.generate(net=net, probes_on=False)
     return model
 
 # Check to see if it's open in the GUI

@@ -17,7 +17,7 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 from ..Arm import Arm
 
-import py3LinkArm 
+import py3LinkArm
 
 import numpy as np
 
@@ -41,28 +41,28 @@ class Arm3Link(Arm):
         # m1 = 20.0; m2 = 12.0; m3 = 7.0
         # inertia moment of links
         def slender_rod_mass(m, l):
-            return 1./3. * m * l ** 2 
+            return 1./3. * m * l ** 2
         izz1 = 100#slender_rod_mass(m1, l1)
         izz2 = 100#slender_rod_mass(m2, l2)
         izz3 = 100#slender_rod_mass(m3, l3)
         # create mass matrices at COM for each link
         self.M1 = np.zeros((6,6))
-        self.M2 = np.zeros((6,6)) 
+        self.M2 = np.zeros((6,6))
         self.M3 = np.zeros((6,6))
-        self.M1[0:3,0:3] = np.eye(3)*m1 
+        self.M1[0:3,0:3] = np.eye(3)*m1
         self.M1[5,5] = izz1
-        self.M2[0:3,0:3] = np.eye(3)*m2 
+        self.M2[0:3,0:3] = np.eye(3)*m2
         self.M2[5,5] = izz2
-        self.M3[0:3,0:3] = np.eye(3)*m3 
+        self.M3[0:3,0:3] = np.eye(3)*m3
         self.M3[5,5] = izz3
-        if self.options == 'smallmass': 
+        if self.options == 'smallmass':
             self.M1 *= .001; self.M2 *= .001; self.M3 *= .001
 
         # self.rest_angles = np.array([0.0, np.pi/4.0, -np.pi/4.0])
         self.rest_angles = np.array([np.pi/4.0, np.pi/4.0, np.pi/4.0])
-        
+
         # stores information returned from maplesim
-        self.state = np.zeros(7) 
+        self.state = np.zeros(7)
         # maplesim arm simulation
         self.sim = pyArm.pySim(dt=self.dt)
         self.sim.reset(self.state)
@@ -70,15 +70,15 @@ class Arm3Link(Arm):
 
     def apply_torque(self, u, dt):
         """Takes in a torque and timestep and updates the
-        arm simulation accordingly. 
+        arm simulation accordingly.
 
         u np.array: the control signal to apply
         dt float: the timestep
         """
         u = -1 * np.array(u, dtype='float')
         # ratio = .9
-        # self.u = ratio * self.u + (1 - ratio) * u 
-       
+        # self.u = ratio * self.u + (1 - ratio) * u
+
         for ii in range(int(np.ceil(dt/self.dt))):
             # self.sim.step(self.state, self.u)
             self.sim.step(self.state, u)
@@ -90,10 +90,10 @@ class Arm3Link(Arm):
         if q is None:
             q = self.q
         q0 = q[0]
-    
+
         JCOM1 = np.zeros((6,3))
-        JCOM1[0,0] = self.L[0] / 2. * -np.sin(q0) 
-        JCOM1[1,0] = self.L[0] / 2. * np.cos(q0) 
+        JCOM1[0,0] = self.L[0] / 2. * -np.sin(q0)
+        JCOM1[1,0] = self.L[0] / 2. * np.cos(q0)
         JCOM1[5,0] = 1.0
 
         return JCOM1
@@ -110,7 +110,7 @@ class Arm3Link(Arm):
         return JCOM1
 
     def gen_jacCOM2(self, q=None):
-        """Generates the Jacobian from the COM of the second 
+        """Generates the Jacobian from the COM of the second
         link to the origin frame"""
         if q is None:
             q = self.q
@@ -130,7 +130,7 @@ class Arm3Link(Arm):
         return JCOM2
 
     def gen_jacCOM2_sinq_cosq(self, sinq, cosq):
-        """Generates the Jacobian from the COM of the second 
+        """Generates the Jacobian from the COM of the second
         link to the origin frame"""
 
         JCOM2 = np.zeros((6,3))
@@ -144,15 +144,15 @@ class Arm3Link(Arm):
         JCOM2[5,0] = 1.0
 
         return JCOM2
-    
-    def gen_jacCOM3(self, q=None): 
+
+    def gen_jacCOM3(self, q=None):
         """Generates the Jacobian from the COM of the third
         link to the origin frame"""
         if q is None:
             q = self.q
 
         q0 = q[0]
-        q01 = q[0] + q[1] 
+        q01 = q[0] + q[1]
         q012 = q[0] + q[1] + q[2]
 
         JCOM3 = np.zeros((6,3))
@@ -163,15 +163,15 @@ class Arm3Link(Arm):
 
         JCOM3[0,1] = self.L[1] * -np.sin(q01) + JCOM3[0,2]
         JCOM3[1,1] = self.L[1] * np.cos(q01) + JCOM3[1,2]
-        JCOM3[5,1] = 1.0 
+        JCOM3[5,1] = 1.0
 
         JCOM3[0,0] = self.L[0] * -np.sin(q0) + JCOM3[0,1]
         JCOM3[1,0] = self.L[0] * np.cos(q0) + JCOM3[1,1]
-        JCOM3[5,0] = 1.0 
+        JCOM3[5,0] = 1.0
 
         return JCOM3
 
-    def gen_jacCOM3_sinq_cosq(self, sinq, cosq): 
+    def gen_jacCOM3_sinq_cosq(self, sinq, cosq):
         """Generates the Jacobian from the COM of the third
         link to the origin frame"""
 
@@ -183,11 +183,11 @@ class Arm3Link(Arm):
 
         JCOM3[0,1] = self.L[1] * -sinq[1] + JCOM3[0,2]
         JCOM3[1,1] = self.L[1] * cosq[1] + JCOM3[1,2]
-        JCOM3[5,1] = 1.0 
+        JCOM3[5,1] = 1.0
 
         JCOM3[0,0] = self.L[0] * -sinq[0] + JCOM3[0,1]
         JCOM3[1,0] = self.L[0] * cosq[0] + JCOM3[1,1]
-        JCOM3[5,0] = 1.0 
+        JCOM3[5,0] = 1.0
 
         return JCOM3
 
@@ -198,12 +198,12 @@ class Arm3Link(Arm):
             q = self.q
 
         q0 = q[0]
-        q01 = q[0] + q[1] 
+        q01 = q[0] + q[1]
         q012 = q[0] + q[1] + q[2]
 
         JEE = np.zeros((2,3))
 
-        if use_incorrect_values == True: 
+        if use_incorrect_values == True:
             l3 = 3.; l2 = 3.; l1 = 3.
         else:
             l3 = self.L[2]; l2 = self.L[1]; l1 = self.L[0]
@@ -219,16 +219,16 @@ class Arm3Link(Arm):
         JEE[1,0] = l1 * np.cos(q0) + JEE[1,1]
 
         return JEE
-    
+
     def gen_jacEE_sinq_cosq(self, sinq, cosq, use_incorrect_values=False):
         """Generates the Jacobian from end-effector to
         the origin frame"""
 
         JEE = np.zeros((2,3))
 
-        if use_incorrect_values == True: 
+        if use_incorrect_values == True:
             l3 = 3.; l2 = 2.; l1 = 1.
-        else: 
+        else:
             l3 = self.L[2]; l2 = self.L[1]; l1 = self.L[0]
 
         # define column entries right to left
@@ -249,7 +249,7 @@ class Arm3Link(Arm):
 
         q0 = self.q[0]
         dq0 = self.dq[0]
-        q01 = self.q[0] + self.q[1] 
+        q01 = self.q[0] + self.q[1]
         dq01 = self.dq[0] + self.dq[1]
         q012 = self.q[0] + self.q[1] + self.q[2]
         dq012 = self.dq[0] + self.dq[1] + self.dq[2]
@@ -275,15 +275,6 @@ class Arm3Link(Arm):
         JCOM2 = self.gen_jacCOM2(q=q)
         JCOM3 = self.gen_jacCOM3(q=q)
 
-        # if use_incorrect_values == True:
-        #     print 'using incorrect Mq matrix...'
-        #     M1 = np.zeros((6,6))
-        #     M2 = np.zeros((6,6)) 
-        #     M3 = np.zeros((6,6))
-        #     M1[0:3,0:3] = np.eye(3)*1; M1[5,5] = 50
-        #     M2[0:3,0:3] = np.eye(3)*1; M2[5,5] = 10
-        #     M3[0:3,0:3] = np.eye(3)*1; M3[5,5] = 10
-        # else: 
         M1 = self.M1
         M2 = self.M2
         M3 = self.M3
@@ -325,7 +316,7 @@ class Arm3Link(Arm):
 
         x = np.cumsum([0,
                        self.L[0] * np.cos(q0),
-                       self.L[1] * np.cos(q0+q1), 
+                       self.L[1] * np.cos(q0+q1),
                        self.L[2] * np.cos(q0+q1+q2)])
         y = np.cumsum([0,
                        self.L[0] * np.sin(q0),
@@ -338,7 +329,7 @@ class Arm3Link(Arm):
         """Update the local variables"""
         self.t = self.state[0]
         self.q = self.state[1:4]
-        self.dq = self.state[4:] 
+        self.dq = self.state[4:]
 
         self.x = self.position(ee_only=True)
 
