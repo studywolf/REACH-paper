@@ -51,6 +51,32 @@ class AreaIntercepts(nengo.dists.Distribution):
 
     def sample(self, n, d=None, rng=np.random):
         s = self.base.sample(n=n, d=d, rng=rng)
-        for i in range(len(s)):
-            s[i] = self.transform(s[i])
+        for ii, ss in enumerate(s):
+            s[ii] = self.transform(ss)
         return s
+
+
+class Triangular(nengo.dists.Distribution):
+    """ Generate an optimally distributed set of intercepts in
+    high-dimensional space using a triangular distribution.
+    """
+    left = nengo.params.NumberParam('dimensions')
+    right = nengo.params.NumberParam('dimensions')
+    mode = nengo.params.NumberParam('dimensions')
+
+    def __init__(self, left, mode, right):
+        super(Triangular, self).__init__()
+        self.left = left
+        self.right = right
+        self.mode = mode
+
+    def __repr__(self):
+        return ("Triangular(left=%r, mode=%r, right=%r)" %
+                (self.left, self.mode, self.right))
+
+    def sample(self, n, d=None, rng=np.random):
+        if d is None:
+            return rng.triangular(self.left, self.mode, self.right, size=n)
+        else:
+            return rng.triangular(
+                self.left, self.mode, self.right, size=(n, d))

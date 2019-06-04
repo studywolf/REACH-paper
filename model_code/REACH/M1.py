@@ -1,8 +1,9 @@
 import numpy as np
 
 import nengo
+import nengolib
 
-from utils import generate_scaling_functions, AreaIntercepts
+from utils import generate_scaling_functions, AreaIntercepts, Triangular
 
 def generate(arm, kp=1,
              operational_space=True,
@@ -38,10 +39,15 @@ def generate(arm, kp=1,
     with net:
         # create / connect up M1 --------------------------------------------------
         net.M1 = nengo.Ensemble(
-            n_neurons=1000, dimensions=dim,
+            n_neurons=30000,
+            dimensions=dim,
             radius=np.sqrt(dim),
-            intercepts=AreaIntercepts(
-                dimensions=dim, base=nengo.dists.Uniform(-1, .1)))
+            encoders=nengolib.stats.ScatteredHypersphere(surface=True),
+            # intercepts=AreaIntercepts(
+            #     dimensions=dim, base=nengo.dists.Uniform(-1, .1)),
+            intercepts=AreaIntercepts(dimensions=dim,
+                                      base=Triangular(-.6, -.2, .1))
+            )
 
         # expecting input in form [q, x_des]
         net.input = nengo.Node(output=scale_down, size_in=dim)

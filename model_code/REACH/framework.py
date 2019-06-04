@@ -15,9 +15,9 @@ def generate(net=None,  # define PMC, M1, CB, S1 inside net
 
         relay = nengo.Node(size_in=dim, label='relay')
         # connect the control signal summed from M1 and CB to the arm
-        nengo.Connection(relay, net.arm_node[:2])
+        nengo.Connection(relay, net.arm_node[:dim])
         # send in (x, y) of target for plotting
-        nengo.Connection(net.xy, net.arm_node[2:])
+        nengo.Connection(net.xy, net.arm_node[dim:])
 
         if getattr(net, "M1", False):
             # project control signal into output relay
@@ -34,18 +34,16 @@ def generate(net=None,  # define PMC, M1, CB, S1 inside net
         if getattr(net, "CB", False):
             # connect up sensory feedback
             nengo.Connection(net.arm_node[:dim*2], net.CB.input[:dim*2])
-            # send in target for context
-            nengo.Connection(net.PMC.output, net.CB.input[dim*2+2:])
 
             # send in training signal
-            nengo.Connection(relay, net.CB.input[dim*2:dim*2+2])
+            nengo.Connection(relay, net.CB.input[dim*2:dim*3])
 
             # project dynamics compensation term into relay
             # to be included in the training signal for u_adapt
             nengo.Connection(net.CB.output[:dim], relay)
 
             # send u_adapt output directly to arm
-            nengo.Connection(net.CB.output[dim:], net.arm_node[:2])
+            nengo.Connection(net.CB.output[dim:], net.arm_node[:dim])
 
         if probes_on:
             net.probe_S1 = nengo.Probe(net.S1.output)

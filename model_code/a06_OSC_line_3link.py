@@ -41,52 +41,56 @@ To run this model, open in Nengo GUI.
 import importlib
 import numpy as np
 
+# from abr_control.arms.twojoint import Config, ArmSim
+from abr_control.arms.threejoint import Config, ArmSim
 import nengo
 
-# from REACH import arm; importlib.reload(arm)
-from arms.arm_wrapper import ArmWrapper
 from REACH import M1; importlib.reload(M1)
 from REACH import CB; importlib.reload(CB)
 from REACH import S1; importlib.reload(S1)
 from REACH import framework; importlib.reload(framework)
+from arms import arm_wrapper; importlib.reload(arm_wrapper)
 
-from abr_control.arms import twojoint as arm
 
 def generate():
     kp = 50
-    kv = np.sqrt(kp) * 1.5
+    kv = np.sqrt(kp)
 
-    start_target = np.array([0, 1])
-    end_target = [0.0, 1.5]
+    start_target = np.array([0, 1.5])
+    end_target = [0, 2.25]
 
-    # use an arm from abr_control
-    arm_config = arm.Config(use_cython=True)
-    # wrap the abr_control arm for nengo interfacing and visualization
-    arm_wrapper = ArmWrapper(
-        config=arm_config,
-        sim=arm.ArmSim(arm_config, dt=1e-3),
-        scale=20, offset=[50, 75], rotation=np.pi)
+    # arm_sim = arm.Arm2Link(dt=1e-3)
+    config = Config()
+    arm_sim = arm_wrapper.ArmWrapper(config, ArmSim(config), reflect=[1, -1])
     # set the initial position of the arm
-    arm_wrapper.reset(q=arm_wrapper.inv_kinematics(start_target))
+    arm_sim.reset(q=arm_sim.inv_kinematics(start_target))
 
-    net = nengo.Network(seed=0)
+    net = nengo.Network()#seed=0)
+    # net.config[nengo.Ensemble].neuron_type = nengo.Direct()
+    net.config[nengo.Connection].synapse = 0.0
     with net:
-        net.dim = arm_wrapper.DOF
-        net.arm_node = arm_wrapper.create_nengo_node()
+        net.dim = config.N_JOINTS
+        net.arm_node = arm_sim.create_nengo_node()
         net.error = nengo.Ensemble(500, 2)
         net.xy = nengo.Node(size_in=2)
 
         # create an M1 model ------------------------------------------------------
-        net.M1 = M1.generate(arm_wrapper, kp=kp,
+        net.M1 = M1.generate(arm_sim, kp=kp,
                              operational_space=True,
                              inertia_compensation=True,
-                             means=[0.6, 2.2, 0, 0],
-                             scales=[.25, .25, .25, .25])
+                             # direct_mode=True,
+                             means=[np.pi/2, np.pi/2, 0, 0, 0],
+                             scales=[np.pi/2, np.pi/2, np.pi, 1, 1],
+                             # means=[np.pi/2, np.pi/2, 0, 0],
+                             # scales=[np.pi/2, np.pi/2, 1, 1],
+                             )
 
         # create an S1 model ------------------------------------------------------
-        net.S1 = S1.generate(arm_wrapper,
-                             means=[.6, 2.2, 0, 0, 0, 1.25],
-                             scales=[.1, .25, .5, 1.5, .1, .25])
+        net.S1 = S1.generate(arm_sim,
+                             means=[np.pi, np.pi, 0, 0, 0, 0, 0, 1.5],
+                             scales=[np.pi, np.pi, np.pi, 1.5, 1.5, 1.5, 1, 1.5],
+                             # direct_mode=True,
+                             )
         # subtract out current position to get desired task space direction
         nengo.Connection(net.S1.output[net.dim*2:], net.error, transform=-1)
 
@@ -105,9 +109,17 @@ def generate():
         nengo.Connection(net.PMC.output, net.xy)
 
         # create  a CB model ------------------------------------------------------
-        net.CB = CB.generate(arm_wrapper, kv=kv,
-                             means=[0.6, 2.2, 0, 0],
-                             scales=[.125, .25, 1, 1.5])
+        net.CB = CB.generate(arm_sim, kv=kv,
+                             # means=[0.6, 2.2, 0, 0],
+                             # scales=[.125, .25, 1, 1.5])
+                             means=[np.pi/2, np.pi/2, 0, 0, 0, 0],
+                             scales=[np.pi/2, np.pi/2, np.pi, 2, 2, 4],
+                             # means=[np.pi, np.pi, 0, 0],
+                             # scales=[np.pi, np.pi, 1, 1.5],
+                             # direct_mode=True,
+                             )
+
+        net.probe_xy = nengo.Probe(net.arm_node[net.dim*2:])
 
     model = framework.generate(net=net, probes_on=False)
     return model
@@ -117,3 +129,10 @@ from nengo.simulator import Simulator as NengoSimulator
 if nengo.Simulator is not NengoSimulator or __name__ == '__main__':
     # connect up the models we've defined, set up the functions, probes, etc
     model = generate()
+    sim = nengo.Simulator(model)
+    sim.run(10)
+
+    xy = sim.data[model.probe_xy]
+    import matplotlib.pyplot as plt
+    plt.plot(sim.trange(), xy)
+    plt.show()

@@ -30,7 +30,7 @@ def generate(arm, direct_mode=False, means=None, scales=None):
         net.config[nengo.Ensemble].neuron_type = nengo.Direct()
     with net:
         # create / connect up S1 --------------------------------------------------
-        net.S1 = nengo.networks.EnsembleArray(n_neurons=50, n_ensembles=dim)
+        net.S1 = nengo.networks.EnsembleArray(n_neurons=500, n_ensembles=dim)
 
         # expecting input in form [q, x_des]
         net.input = nengo.Node(output=scale_down, size_in=dim)

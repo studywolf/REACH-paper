@@ -1,6 +1,8 @@
 import numpy as np
 
 import nengo
+import nengolib
+
 from utils import generate_scaling_functions, AreaIntercepts
 
 def generate(arm, kv=1,
@@ -36,12 +38,14 @@ def generate(arm, kv=1,
     with net:
         # create / connect up CB ----------------------------------------------
         net.CB = nengo.Ensemble(
-            n_neurons=1000, dimensions=dim,
+            n_neurons=10000, dimensions=dim,
             radius=np.sqrt(dim),
+            encoders=nengolib.stats.ScatteredHypersphere(surface=True),
             intercepts=AreaIntercepts(
-                dimensions=dim, base=nengo.dists.Uniform(-1, .1)))
+                dimensions=dim, base=nengo.dists.Uniform(-1, .1)),
+            )
         # expecting input in form [q, dq, u]
-        net.input = nengo.Node(output=scale_down, size_in=dim+arm.DOF+2)
+        net.input = nengo.Node(output=scale_down, size_in=arm.DOF*3)
         cb_input = nengo.Node(size_in=dim, label='CB input')
         nengo.Connection(net.input[:dim], cb_input)
         # output is [-Mdq, u_adapt]
