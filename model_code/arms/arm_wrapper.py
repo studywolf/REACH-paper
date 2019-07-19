@@ -31,7 +31,7 @@ class ArmWrapper:
 
 
     def reset(self, q=None, dq=None):
-        self.sim.q_init = q
+        self.sim.init_state[::2] = q
         self.sim.reset()
 
 
@@ -74,13 +74,13 @@ class ArmWrapper:
         import scipy.optimize
         # function to optimize TODO: also return jacobian to minimize func
         def distance_to_target(q, xy, L):
-            x = L[0] * np.cos(q[0]) + L[1] * np.cos(q[0] + q[1])
-            y = L[0] * np.sin(q[0]) + L[1] * np.sin(q[0] + q[1])
+            x = np.sum([L[ii] * np.cos(np.sum(q[:ii+1])) for ii in range(self.DOF)])
+            y = np.sum([L[ii] * np.sin(np.sum(q[:ii+1])) for ii in range(self.DOF)])
             return np.sqrt((x - xy[0])**2 + (y - xy[1])**2)
 
         return scipy.optimize.minimize(
             fun=distance_to_target, x0=self.sim.q,
-            args=([xy[0], xy[1]], [self.l[0], self.l[1]]))['x']
+            args=([xy[0], xy[1]], [self.l[ii] for ii in range(self.DOF)]))['x']
 
 
     def create_nengo_node(self):
