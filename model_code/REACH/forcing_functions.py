@@ -81,10 +81,10 @@ def generate(y_des, dt=.001, n_samples=1000,
         #     forces[ii] /= (goal[ii] - start[ii])
 
         # create the lookup table set for training oscillator output
-        forcing_functions.append(
-            nengo.utils.connection.target_function(
-                np.array([np.cos(x), np.sin(x)]).T,
-                forces[ii]))
+        forcing_functions.append({
+            'eval_points': np.array([np.cos(x), np.sin(x)]).T,
+            'function': forces[ii][:, None],
+        })
 
     if rhythmic is False:
         goal = [start, goal]

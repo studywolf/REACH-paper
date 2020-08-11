@@ -2,7 +2,6 @@ import numpy as np
 from scipy import interpolate
 
 import nengo
-import nengolib
 
 import importlib
 from . import forcing_functions; importlib.reload(forcing_functions)
@@ -23,7 +22,7 @@ def generate(y_des, speed=1, alpha=1000.0, direct_mode=False):
 
     # create alpha synapse, which has point attractor dynamics
     tau = np.sqrt(1.0 / (alpha*beta))
-    alpha_synapse = nengolib.Alpha(tau)
+    alpha_synapse = nengo.Alpha(tau)
 
     net = nengo.Network('PMC')
     if direct_mode:
